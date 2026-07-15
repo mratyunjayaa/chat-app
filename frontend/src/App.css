@@ -218,13 +218,44 @@ body, html, #root {
 /* ==========================================================================
    7. Mobile & Tablet Responsiveness Breakpoints
    ========================================================================== */
+/* Custom Header additions for status mapping */
+.mobile-online-count {
+  display: none; /* Hidden by default on desktop monitors */
+  font-size: 0.75rem;
+  color: var(--text-gray);
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   7. Mobile & Tablet Responsiveness Breakpoints (UPDATED)
+   ========================================================================== */
 @media (max-width: 768px) {
-  /* Hide the sidebar to free up horizontal layout space on mobile */
+  /* Hide desktop sidebar */
   .chat-sidebar {
-    display: none;
+    display: none !important;
   }
   
-  /* Increase message chat bubbles size on small devices */
+  /* Show mobile top status tracker indicator */
+  .mobile-online-count {
+    display: block;
+  }
+
+  .global-header {
+    height: 70px; /* Slight expansion for stacked header titles */
+  }
+
+  .main-content {
+    height: calc(100vh - 70px);
+  }
+
+  /* Force the chat container shell to instantly take full width */
+  .chat-window-container {
+    flex: 1 1 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
   .message-bubble {
     max-width: 85%;
   }
@@ -234,7 +265,6 @@ body, html, #root {
     gap: 6px;
   }
 
-  /* Make tap inputs slightly taller for touch interactions */
   .chat-input-bar {
     padding: 10px 12px;
     min-height: 60px;
@@ -242,7 +272,7 @@ body, html, #root {
   
   .main-text-field {
     padding: 12px 14px;
-    font-size: 1rem; /* Stops iOS browsers from forced auto-zooming into form elements */
+    font-size: 1rem; /* Prevents mobile browser auto-zoom glitches */
   }
 
   .submit-send-btn {

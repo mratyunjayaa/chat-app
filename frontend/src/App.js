@@ -11,8 +11,7 @@ import InputBar from "./components/InputBar";
 import "./App.css";
 
 // ====================== CONFIG ======================
-const API_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 // Create socket only once
 const socket = io(API_URL, {
@@ -135,7 +134,8 @@ function App() {
 
   return (
     <div className="app-layout">
-      <Header username={username} />
+      {/* FIXED: Passing down onlineCount so it can render on mobile devices */}
+      <Header username={username} onlineCount={onlineUsers.length} />
 
       <div className="main-content">
         <Sidebar
