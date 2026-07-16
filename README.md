@@ -332,7 +332,7 @@ Nodemon
 
 ---
 
-# 🔮 Future Improvements
+# 🔮Implementation in Progress
 
 - JWT Authentication
 - Private Chat
