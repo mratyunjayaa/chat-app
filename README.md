@@ -243,11 +243,11 @@ MongoDB was chosen because:
 
 ---
 
-# 🎁 Bonus Features
+# Features
 
 | Feature | Status |
 |----------|--------|
-| Username Login (Dummy) | ✅ |
+| Username Login | ✅ |
 | MongoDB Storage | ✅ |
 | Real-Time Messaging | ✅ |
 | Online Users | ✅ |
@@ -298,22 +298,34 @@ Nodemon
 
 ---
 
-# 📸 Screenshots
+## 📸 Screenshots
 
-Add screenshots here after deployment.
+### 🔐 Login Screen
 
-```
-Login Screen
-<img width="1900" height="848" alt="image" src="https://github.com/user-attachments/assets/5987c548-6b7a-49bb-8d85-2984d0e13afa" />
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5987c548-6b7a-49bb-8d85-2984d0e13afa" alt="Login Screen" width="900">
+</p>
 
+---
 
-Chat Interface
-<img width="1907" height="853" alt="image" src="https://github.com/user-attachments/assets/3ac16b8b-af18-4554-8dad-7dfc02b245cf" />
+### 💬 Chat Interface
 
-<img width="1576" height="855" alt="image" src="https://github.com/user-attachments/assets/bdf162a2-3161-446b-8e42-e1216986e997" />
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/3ac16b8b-af18-4554-8dad-7dfc02b245cf" alt="Chat Interface 1" width="900">
+</p>
 
-<img width="1902" height="865" alt="image" src="https://github.com/user-attachments/assets/e0fd720f-aa4b-4aca-8573-6892bb193ff9" />
-<img width="1892" height="857" alt="image" src="https://github.com/user-attachments/assets/f605a412-ebd5-4b3f-8a5f-a73336d7958d" />
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/bdf162a2-3161-446b-8e42-e1216986e997" alt="Chat Interface 2" width="900">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e0fd720f-aa4b-4aca-8573-6892bb193ff9" alt="Chat Interface 3" width="900">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f605a412-ebd5-4b3f-8a5f-a73336d7958d" alt="Chat Interface 4" width="900">
+</p>
+
 
 
 ```
