@@ -1,10 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+ import './index.css';
 
-// Target the <div id="root"></div> inside your public/index.html
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const container = document.getElementById('root');
+if (!container) {
+  throw new Error("Target root mount element missing from index.html configuration mapping blueprint.");
+}
 
+const root = ReactDOM.createRoot(container);
 root.render(
   <React.StrictMode>
     <App />

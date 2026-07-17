@@ -1,165 +1,120 @@
-import React, { useState, useEffect, useRef } from "react";
-import io from "socket.io-client";
-import axios from "axios";
+import React, { useState } from "react";
+import { Toaster, toast } from "react-hot-toast";
 
+// Context Architecture & Custom Stream Hooks
+import { SocketProvider } from "./context/SocketContext";
+import { useChat } from "./hooks/useChatSocket";
+import { validateUsername } from "./utils/validations";
+
+// Modular Presentation Layout Components
 import Login from "./components/Login";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import MessageStream from "./components/MessageStream";
 import InputBar from "./components/InputBar";
 
-import "./App.css";
+import './index.css';
 
-// ====================== CONFIG ======================
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-// Create socket only once
-const socket = io(API_URL, {
-  transports: ["websocket"],
-  withCredentials: true,
-});
-
-function App() {
-  const [username, setUsername] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
-
-  const [typingUser, setTypingUser] = useState("");
-  const [onlineUsers, setOnlineUsers] = useState([]);
-
-  const messagesEndRef = useRef(null);
-  const typingTimeoutRef = useRef(null);
-
-  // ====================== INITIAL LOAD ======================
-  useEffect(() => {
-    if (!isLoggedIn) return;
-
-    const fetchMessages = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/api/messages`);
-        setMessages(res.data);
-      } catch (err) {
-        console.error("Unable to fetch messages", err);
-      }
-    };
-
-    fetchMessages();
-
-    socket.emit("join_room", username);
-
-    socket.on("receive_message", (message) => {
-      setMessages((prev) => [...prev, message]);
-    });
-
-    socket.on("display_typing", ({ username: user, typing }) => {
-      if (user !== username) {
-        setTypingUser(typing ? user : "");
-      }
-    });
-
-    socket.on("user_status", (users) => {
-      setOnlineUsers(users);
-    });
-
-    return () => {
-      socket.off("receive_message");
-      socket.off("display_typing");
-      socket.off("user_status");
-    };
-  }, [isLoggedIn, username]);
-
-  // ====================== AUTO SCROLL ======================
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages, typingUser]);
-
-  // ====================== LOGIN ======================
-  const handleLogin = (e) => {
-    e.preventDefault();
-
-    if (!username.trim()) return;
-
-    setIsLoggedIn(true);
-  };
-
-  // ====================== SEND ======================
-  const handleSend = (e) => {
-    e.preventDefault();
-
-    if (!message.trim()) return;
-
-    socket.emit("send_message", {
-      username,
-      text: message,
-    });
-
-    socket.emit("typing", {
-      username,
-      typing: false,
-    });
-
-    setMessage("");
-  };
-
-  // ====================== TYPING ======================
-  const handleTyping = () => {
-    socket.emit("typing", {
-      username,
-      typing: true,
-    });
-
-    clearTimeout(typingTimeoutRef.current);
-
-    typingTimeoutRef.current = setTimeout(() => {
-      socket.emit("typing", {
-        username,
-        typing: false,
-      });
-    }, 2000);
-  };
-
-  if (!isLoggedIn) {
-    return (
-      <Login
-        username={username}
-        setUsername={setUsername}
-        onLogin={handleLogin}
-      />
-    );
-  }
+function ChatDashboard({ username }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // Consume our unified data stream hooks layer
+  const { 
+    messages, 
+    typingUser, 
+    onlineUsers, 
+    messagesEndRef, 
+    sendNewMessage, 
+    emitTypingState 
+  } = useChat({ username, isLoggedIn: true });
 
   return (
-    <div className="app-layout">
-      {/* FIXED: Passing down onlineCount so it can render on mobile devices */}
-      <Header username={username} onlineCount={onlineUsers.length} />
-
-      <div className="main-content">
-        <Sidebar
-          onlineUsers={onlineUsers}
-          currentUsername={username}
+    <div className="flex flex-col h-screen w-screen bg-slate-100 overflow-hidden font-sans antialiased">
+      {/* Global Top Navigation Header */}
+      <Header 
+        username={username} 
+        onlineCount={onlineUsers.length} 
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
+      />
+      
+      {/* Primary Workspace Viewport Layout */}
+      <div className="flex flex-1 h-[calc(100vh-64px)] overflow-hidden relative">
+        {/* Dynamic Responsive Sidebar Drawer Panel */}
+        <Sidebar 
+          onlineUsers={onlineUsers} 
+          currentUsername={username} 
+          isMobileOpen={isSidebarOpen} 
+          onCloseSidebar={() => setIsSidebarOpen(false)} 
         />
-
-        <main className="chat-window-container">
-          <MessageStream
-            messages={messages}
-            currentUsername={username}
-            typingUser={typingUser}
-            messagesEndRef={messagesEndRef}
+        
+        {/* Central Chat Stream Message Window Layout */}
+        <main className="flex flex-col flex-1 bg-slate-50 overflow-hidden w-full h-full relative">
+          <MessageStream 
+            messages={messages} 
+            currentUsername={username} 
+            typingUser={typingUser} 
+            messagesEndRef={messagesEndRef} 
           />
-
-          <InputBar
-            message={message}
-            setMessage={setMessage}
-            onSend={handleSend}
-            onTyping={handleTyping}
+          
+          {/* Input control block handles internal state buffers natively */}
+          <InputBar 
+            onSend={sendNewMessage} 
+            onTyping={emitTypingState} 
           />
         </main>
       </div>
     </div>
+  );
+}
+
+/**
+ * Main Application Shell Container
+ * Manages authorization states, connection trees, and hot toast notification contexts.
+ */
+function App() {
+  const [username, setUsername] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+    
+    // Process input text strings through our regex sanitation pipeline
+    if (!validateUsername(username)) {
+      toast.error("Invalid handle! Use 2-25 alphanumeric characters (no spaces).");
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    // Simulate connection lag to provide smooth UI transition states
+    setTimeout(() => {
+      setIsLoggedIn(true);
+      setIsLoading(false);
+      toast.success(`Welcome back, ${username}!`);
+    }, 600);
+  };
+
+  return (
+    <>
+      {/* Global Toast Provider Layout Portal */}
+      <Toaster position="top-center" />
+      
+      {!isLoggedIn ? (
+        <Login 
+          username={username} 
+          setUsername={setUsername} 
+          onLogin={handleLoginSubmit} 
+          isLoading={isLoading} 
+        />
+      ) : (
+        // Wrap the dashboard securely inside the WebSocket provider node tree
+        <SocketProvider username={username}>
+          <ChatDashboard username={username} />
+        </SocketProvider>
+      )}
+    </>
   );
 }
 

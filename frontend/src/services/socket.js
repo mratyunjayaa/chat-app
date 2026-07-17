@@ -1,0 +1,10 @@
+import { io } from "socket.io-client";
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+// Standard client generation with strict parameters
+export const socket = io(API_URL, {
+  transports: ["websocket"],
+  withCredentials: true,
+  autoConnect: false,
+});
